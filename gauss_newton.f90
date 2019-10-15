@@ -5,12 +5,14 @@ program gauss_newton
   integer, parameter:: m = 7
   integer, parameter:: itaration = 10
   integer, parameter:: inunit = 10
+  double precision, parameter:: dbeta = 0.1
 !variables
   double precision:: rcond
   integer:: i, j, ifail, info, lda, ldb, nrhs, ita
   double precision:: beta1
   double precision:: beta2
-  double precision:: s = 0
+  double precision:: s
+  double precision:: func, deltafunc1, deltafunc2
 !arrays
   double precision, allocatable :: a(:, :), b(:)
   integer, allocatable :: ipiv(:)
@@ -37,9 +39,12 @@ program gauss_newton
     b = 0
 
     do i=1, m
-      jacobian(1, i) = -x0(i)/(beta2 + x0(i))
-      jacobian(2, i) = (beta1*x0(i))/((beta2 + x0(i))**2)
-      e(i) = y0(i) - ((beta1*x0(i))/(beta2 + x0(i)))
+      func = -(beta1*x0(i))/(beta2 + x0(i))
+      deltafunc1 = -((beta1+dbeta)*x0(i))/(beta2 + x0(i))
+      deltafunc2 = -(beta1*x0(i))/(beta2 + dbeta + x0(i))
+      jacobian(1, i) = (deltafunc1 - func)/dbeta
+      jacobian(2, i) = (deltafunc2 - func)/dbeta
+      e(i) = y0(i) + func
     end do
 
     a = matmul(jacobian, transpose(jacobian))
